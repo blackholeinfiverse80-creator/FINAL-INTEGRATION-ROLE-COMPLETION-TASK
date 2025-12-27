@@ -1,0 +1,226 @@
+{
+  "info": {
+    "name": "Core Integrator API",
+    "description": "Unified Backend Bridge - CreatorCore Integration Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Root Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/system/health",
+              "host": ["{{base_url}}"],
+              "path": ["system", "health"]
+            }
+          }
+        },
+        {
+          "name": "Diagnostics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/system/diagnostics",
+              "host": ["{{base_url}}"],
+              "path": ["system", "diagnostics"]
+            }
+          }
+        },
+        {
+          "name": "Latest Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/system/logs/latest?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["system", "logs", "latest"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Core Processing",
+      "item": [
+        {
+          "name": "Sample Text Module",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"module\": \"sample_text\",\n  \"intent\": \"generate\",\n  \"user_id\": \"test_user\",\n  \"data\": {\n    \"text\": \"Hello CreatorCore! This is a test message.\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/core",
+              "host": ["{{base_url}}"],
+              "path": ["core"]
+            }
+          }
+        },
+        {
+          "name": "Finance Agent - Generate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"module\": \"finance\",\n  \"intent\": \"generate\",\n  \"user_id\": \"test_user\",\n  \"data\": {\n    \"report_type\": \"quarterly\",\n    \"period\": \"Q4 2024\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/core",
+              "host": ["{{base_url}}"],
+              "path": ["core"]
+            }
+          }
+        },
+        {
+          "name": "Finance Agent - Analyze",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"module\": \"finance\",\n  \"intent\": \"analyze\",\n  \"user_id\": \"test_user\",\n  \"data\": {\n    \"metric\": \"revenue\",\n    \"timeframe\": \"monthly\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/core",
+              "host": ["{{base_url}}"],
+              "path": ["core"]
+            }
+          }
+        },
+        {
+          "name": "Education Agent - Generate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"module\": \"education\",\n  \"intent\": \"generate\",\n  \"user_id\": \"test_user\",\n  \"data\": {\n    \"topic\": \"Python programming basics\",\n    \"level\": \"beginner\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/core",
+              "host": ["{{base_url}}"],
+              "path": ["core"]
+            }
+          }
+        },
+        {
+          "name": "Creator Agent - Generate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"module\": \"creator\",\n  \"intent\": \"generate\",\n  \"user_id\": \"test_user\",\n  \"data\": {\n    \"topic\": \"AI innovation\",\n    \"type\": \"story\",\n    \"goal\": \"inspire\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/core",
+              "host": ["{{base_url}}"],
+              "path": ["core"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Memory & Context",
+      "item": [
+        {
+          "name": "Get User History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get-history?user_id=test_user",
+              "host": ["{{base_url}}"],
+              "path": ["get-history"],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": "test_user"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Context",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get-context?user_id=test_user",
+              "host": ["{{base_url}}"],
+              "path": ["get-context"],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": "test_user"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8001",
+      "type": "string"
+    }
+  ]
+}

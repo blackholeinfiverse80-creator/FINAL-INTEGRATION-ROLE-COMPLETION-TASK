@@ -1,0 +1,157 @@
+import sqlite3
+import json
+from datetime import datetime
+from typing import List, Dict, Any, Optional
+from pathlib import Path
+import threading
+
+class ContextMemory:
+    """SQLite-based context memory for storing user interactions"""
+    
+    def __init__(self, db_path: str = "data/context.db"):
+        self.db_path = db_path
+        if db_path != ":memory:":
+            Path(db_path).parent.mkdir(exist_ok=True)
+        self._lock = threading.Lock()
+        self._init_db()
+    
+    def _init_db(self):
+        """Initialize the database with required tables"""
+        # Enable WAL mode and set a busy timeout to improve concurrency
+        with sqlite3.connect(self.db_path, timeout=30) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA busy_timeout=30000")
+            # Create table with module column
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS interactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    module TEXT NOT NULL,
+                    timestamp TEXT NOT NULL,
+                    request_data TEXT NOT NULL,
+                    response_data TEXT NOT NULL
+                )
+            """)
+            
+            # Check if module column exists (for existing databases)
+            cursor = conn.execute("PRAGMA table_info(interactions)")
+            columns = [row[1] for row in cursor.fetchall()]
+            
+            if 'module' not in columns:
+                try:
+                    # Add module column to existing table
+                    conn.execute("ALTER TABLE interactions ADD COLUMN module TEXT DEFAULT 'unknown'")
+                except sqlite3.OperationalError:
+                    # Column already exists, ignore
+                    pass
+            
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_user_module_timestamp 
+                ON interactions(user_id, module, timestamp DESC)
+            """)
+    
+    def _ensure_table_exists(self, conn):
+        """Ensure table exists in current connection (for in-memory databases)"""
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS interactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                module TEXT NOT NULL,
+                timestamp TEXT NOT NULL,
+                request_data TEXT NOT NULL,
+                response_data TEXT NOT NULL
+            )
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_user_module_timestamp 
+            ON interactions(user_id, module, timestamp DESC)
+        """)
+    
+    def store_interaction(self, user_id: str, request_data: Dict[str, Any], 
+                         response_data: Dict[str, Any]):
+        """Store a request-response interaction"""
+        timestamp = datetime.now().isoformat()
+        module = request_data.get("module", "unknown")
+
+        # Use a lock to provide concurrency safety for writes from multiple threads/processes
+        with self._lock:
+            with sqlite3.connect(self.db_path, timeout=30) as conn:
+                self._ensure_table_exists(conn)
+                cursor = conn.cursor()
+                try:
+                    cursor.execute("BEGIN IMMEDIATE TRANSACTION")
+                    cursor.execute(
+                        """
+                        INSERT INTO interactions (user_id, module, timestamp, request_data, response_data)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (user_id, module, timestamp, json.dumps(request_data), json.dumps(response_data))
+                    )
+
+                    # Deterministic retention: keep newest by timestamp, then id
+                    cursor.execute(
+                        """
+                        DELETE FROM interactions
+                        WHERE id IN (
+                            SELECT id FROM interactions
+                            WHERE user_id = ? AND module = ?
+                            ORDER BY timestamp DESC, id DESC
+                            LIMIT -1 OFFSET 5
+                        )
+                        """,
+                        (user_id, module)
+                    )
+
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+                    raise
+    
+    def get_user_history(self, user_id: str) -> List[Dict[str, Any]]:
+        """Get full interaction history for a user"""
+        with sqlite3.connect(self.db_path, timeout=30) as conn:
+            self._ensure_table_exists(conn)
+            cursor = conn.execute(
+                """
+                SELECT module, timestamp, request_data, response_data
+                FROM interactions
+                WHERE user_id = ?
+                ORDER BY timestamp DESC, id DESC
+            """,
+                (user_id,)
+            )
+
+            return [
+                {
+                    "module": row[0],
+                    "timestamp": row[1],
+                    "request": json.loads(row[2]),
+                    "response": json.loads(row[3])
+                }
+                for row in cursor.fetchall()
+            ]
+    
+    def get_context(self, user_id: str, limit: int = 3) -> List[Dict[str, Any]]:
+        """Get recent context (last N interactions) for a user"""
+        with sqlite3.connect(self.db_path, timeout=30) as conn:
+            self._ensure_table_exists(conn)
+            cursor = conn.execute(
+                """
+                SELECT module, timestamp, request_data, response_data
+                FROM interactions
+                WHERE user_id = ?
+                ORDER BY timestamp DESC, id DESC
+                LIMIT ?
+            """,
+                (user_id, limit)
+            )
+
+            return [
+                {
+                    "module": row[0],
+                    "timestamp": row[1],
+                    "request": json.loads(row[2]),
+                    "response": json.loads(row[3])
+                }
+                for row in cursor.fetchall()
+            ]

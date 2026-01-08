@@ -22,5 +22,9 @@ class SampleTextModule(BaseModule):
             "result": {"word_count": word_count}
         }
 
+    def handle_request(self, intent: str, data: Dict[str, Any], context: List[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Handle request like an agent for backward compatibility"""
+        return self.process(data, context)
+
     def metadata(self) -> Dict[str, Any]:
         return {"name": "sample_text", "version": "0.1"}

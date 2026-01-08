@@ -195,8 +195,9 @@ class Gateway:
             request_data = {"module": module, "intent": intent, "user_id": user_id, "data": data}
             try:
                 self.memory.store_interaction(user_id, request_data, normalized)
-            except Exception:
-                self.logger.exception("Failed to store interaction")
+                self.logger.info(f"Stored interaction for user {user_id}")
+            except Exception as e:
+                self.logger.exception(f"Failed to store interaction: {e}")
 
         # Log response
         try:

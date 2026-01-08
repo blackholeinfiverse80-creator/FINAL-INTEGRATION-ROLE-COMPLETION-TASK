@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from typing import List, Dict, Any, Optional
 import os
 import sqlite3
@@ -23,6 +25,14 @@ app = FastAPI(
     description="Central orchestration layer for Finance, Education, and Creator agents",
     version="1.0.0"
 )
+
+# Add validation error handler
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()}
+    )
 
 # Initialize gateway and memory
 gateway = Gateway()

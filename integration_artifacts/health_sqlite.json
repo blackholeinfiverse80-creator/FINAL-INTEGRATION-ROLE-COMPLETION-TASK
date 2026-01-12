@@ -1,0 +1,19 @@
+{
+  "status": "healthy",
+  "components": {
+    "database": "healthy",
+    "gateway": "healthy",
+    "modules": 4
+  },
+  "timestamp": "2026-01-08T13:30:00.000Z",
+  "insightflow_event": {
+    "event_type": "heartbeat",
+    "component": "core_integrator",
+    "status": "healthy",
+    "details": {
+      "database": "healthy",
+      "gateway": "healthy",
+      "modules": 4
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-01-08T13:30:00.000Z",
+  "modes_tested": {
+    "sqlite": {
+      "health": {
+        "status_code": 200,
+        "success": true,
+        "overall_status": "healthy",
+        "components": {
+          "database": "healthy",
+          "gateway": "healthy",
+          "modules": 4
+        }
+      },
+      "diagnostics": {
+        "status_code": 200,
+        "success": true,
+        "integration_ready": true,
+        "integration_score": 1.0,
+        "failing_components": []
+      }
+    }
+  },
+  "feedback_validation": {
+    "status_code": 422,
+    "success": true,
+    "properly_rejected": true
+  },
+  "summary": {
+    "all_health_endpoints_ok": true,
+    "all_diagnostics_endpoints_ok": true,
+    "feedback_validation_ok": true,
+    "overall_success": true
+  }
+}
